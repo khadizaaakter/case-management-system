@@ -1,0 +1,987 @@
+{
+  "info": {
+    "name": "CMS — Case Management System API",
+    "description": "Case Management System API.\n\nBase URL: https://wa.acibd.com/api/cms\nLaravel registers routes/api.php under an `api` prefix, so every endpoint is {{base_url}}/api/...\n\nAuth: run \"Auth › Login\" first — its test script stores the Sanctum token in the {{token}} collection variable, and every other request inherits Bearer {{token}} from the collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://wa.acibd.com/api/cms" },
+    { "key": "token", "value": "" },
+    { "key": "case_id", "value": "1" },
+    { "key": "user_id", "value": "1" },
+    { "key": "role_id", "value": "1" },
+    { "key": "permission_id", "value": "1" },
+    { "key": "depot_id", "value": "1" },
+    { "key": "business_id", "value": "1" },
+    { "key": "lawyer_id", "value": "1" },
+    { "key": "court_id", "value": "1" },
+    { "key": "case_status_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('token', res.token);",
+                  "    console.log('Token saved');",
+                  "}",
+                  "pm.test('Login success', () => pm.expect(res.status).to.eql('success'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"md.islam@acibd.com\",\n    \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+          }
+        },
+        {
+          "name": "Register (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"New User\",\n    \"email\": \"new.user@acibd.com\",\n    \"password\": \"secret123\",\n    \"roles\": [\"Viewer\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/register", "host": ["{{base_url}}"], "path": ["api", "register"] }
+          }
+        },
+        {
+          "name": "Logged User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/loggeduser", "host": ["{{base_url}}"], "path": ["api", "loggeduser"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n    \"password\": \"newsecret123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/changepassword", "host": ["{{base_url}}"], "path": ["api", "changepassword"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/logout", "host": ["{{base_url}}"], "path": ["api", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard"],
+              "query": [
+                { "key": "business_id", "value": "1", "disabled": true },
+                { "key": "status_id", "value": "1", "disabled": true },
+                { "key": "depot_id", "value": "1", "disabled": true }
+              ]
+            },
+            "description": "Returns stats (8 tiles), highlights (4 cards), cases_by_status, recovery_by_depot and upcoming_hearings (next 30 days)."
+          }
+        },
+        {
+          "name": "Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/analytics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics"],
+              "query": [
+                { "key": "depot_id", "value": "1", "disabled": true },
+                { "key": "date_from", "value": "2024-01-01", "disabled": true },
+                { "key": "date_to", "value": "2026-12-31", "disabled": true }
+              ]
+            },
+            "description": "summary, case_aging, depot_wise_recovery_rate, depot_performance, key_performance_indicators."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cases",
+      "item": [
+        {
+          "name": "Case List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/cases",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cases"],
+              "query": [
+                { "key": "search", "value": "C001", "disabled": true },
+                { "key": "status_id", "value": "5", "disabled": true },
+                { "key": "depot_id", "value": "2", "disabled": true },
+                { "key": "business_id", "value": "1", "disabled": true },
+                { "key": "court_id", "value": "1", "disabled": true },
+                { "key": "lawyer_id", "value": "1", "disabled": true },
+                { "key": "is_case_filed", "value": "1", "disabled": true },
+                { "key": "date_from", "value": "2024-01-01", "disabled": true },
+                { "key": "date_to", "value": "2026-12-31", "disabled": true },
+                { "key": "per_page", "value": "10", "disabled": true }
+              ]
+            },
+            "description": "Omit per_page for the full list; send it to get a paginated response with a meta block."
+          }
+        },
+        {
+          "name": "Case Form Data (dropdowns)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/cases/form_data", "host": ["{{base_url}}"], "path": ["api", "cases", "form_data"] },
+            "description": "businesses, depots, courts, lawyers, case_statuses, customers — everything the Create Case form needs."
+          }
+        },
+        {
+          "name": "Create Case",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.result && res.result.id) {",
+                  "    pm.collectionVariables.set('case_id', res.result.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"business_id\": 1,\n    \"customer_code\": \"AH091Y\",\n    \"depot_id\": 1,\n    \"accused_name\": \"Md. Rafiqul Islam\",\n    \"accused_address\": \"Mirpur 10, Dhaka\",\n    \"petitioner_name\": \"ACI Limited\",\n    \"lawyer_name\": \"Advocate Md. Karim\",\n    \"case_number\": \"CMS-2026-101\",\n    \"section\": \"138 NI Act\",\n    \"court_id\": 1,\n    \"is_case_filed\": true,\n    \"case_filing_date\": \"2026-07-20\",\n    \"cheque_amount\": 400000,\n    \"remarks\": \"Optional notes\",\n\n    \"dues_at_filing\": 400000,\n    \"dues_at_25th_previous_month\": 350000,\n    \"dues_at_25th_current_month\": 300000,\n\n    \"status_id\": 2,\n    \"previous_hearing_date\": null,\n    \"next_hearing_date\": \"2026-08-15\",\n    \"legal_notice_served_date\": null,\n    \"contact_phone\": \"01711000000\",\n    \"contact_email\": \"customer@example.com\",\n    \"guarantor_name\": \"Rahim Mia\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/cases", "host": ["{{base_url}}"], "path": ["api", "cases"] },
+            "description": "customer_code / lawyer_name are free text — a row is created on first sight. Send customer_code_id / lawyer_id instead if you already have them.\n\nrecovered_notice_to_date, total_recovered_amount and present_dues are DERIVED server-side from the three dues values — do not send them."
+          }
+        },
+        {
+          "name": "Case Details",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/cases/{{case_id}}", "host": ["{{base_url}}"], "path": ["api", "cases", "{{case_id}}"] },
+            "description": "Returns the case plus its audit_logs."
+          }
+        },
+        {
+          "name": "Update Case",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"business_id\": 1,\n    \"customer_code\": \"AH091Y\",\n    \"depot_id\": 1,\n    \"accused_name\": \"Md. Rafiqul Islam\",\n    \"accused_address\": \"Mirpur 10, Dhaka\",\n    \"petitioner_name\": \"ACI Limited\",\n    \"lawyer_id\": 1,\n    \"case_number\": \"CMS-2026-101\",\n    \"section\": \"138 NI Act\",\n    \"court_id\": 1,\n    \"is_case_filed\": true,\n    \"case_filing_date\": \"2026-07-20\",\n    \"cheque_amount\": 400000,\n    \"remarks\": \"Updated notes\",\n    \"judgement_details\": \"Judgement in favour of petitioner\",\n\n    \"dues_at_filing\": 400000,\n    \"dues_at_25th_previous_month\": 350000,\n    \"dues_at_25th_current_month\": 250000,\n\n    \"status_id\": 5,\n    \"next_hearing_date\": \"2026-09-15\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/cases/{{case_id}}", "host": ["{{base_url}}"], "path": ["api", "cases", "{{case_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Case",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/cases/{{case_id}}", "host": ["{{base_url}}"], "path": ["api", "cases", "{{case_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reporting",
+      "item": [
+        {
+          "name": "Report — Case Rows",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/reports/cases",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "cases"],
+              "query": [
+                { "key": "status_id", "value": "5", "disabled": true },
+                { "key": "depot_id", "value": "2", "disabled": true },
+                { "key": "date_from", "value": "2024-01-01", "disabled": true },
+                { "key": "date_to", "value": "2026-12-31", "disabled": true }
+              ]
+            },
+            "description": "rows (with sl_no) + totals footer."
+          }
+        },
+        {
+          "name": "Report — Export CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/cases/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "cases", "export"],
+              "query": [
+                { "key": "status_id", "value": "5", "disabled": true },
+                { "key": "depot_id", "value": "2", "disabled": true },
+                { "key": "date_from", "value": "2024-01-01", "disabled": true },
+                { "key": "date_to", "value": "2026-12-31", "disabled": true }
+              ]
+            },
+            "description": "UTF-8 CSV download — opens directly in Excel. Use Postman's \"Send and Download\"."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Settings (all lists)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/settings", "host": ["{{base_url}}"], "path": ["api", "settings"] },
+            "description": "depots, businesses, lawyers, courts, users, case_statuses + 50 most recent audit_logs."
+          }
+        },
+        {
+          "name": "Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/audit_logs?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "audit_logs"],
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "action", "value": "CREATE", "disabled": true },
+                { "key": "module", "value": "Case", "disabled": true },
+                { "key": "user_id", "value": "1", "disabled": true },
+                { "key": "case_master_id", "value": "1", "disabled": true },
+                { "key": "date_from", "value": "2026-01-01", "disabled": true },
+                { "key": "date_to", "value": "2026-12-31", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Depots",
+          "item": [
+            {
+              "name": "List Depots",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": {
+                  "raw": "{{base_url}}/api/depots",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "depots"],
+                  "query": [
+                    { "key": "search", "value": "Dhaka", "disabled": true },
+                    { "key": "is_active", "value": "1", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Depot",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Rangpur\",\n    \"code\": \"RNG\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/depots", "host": ["{{base_url}}"], "path": ["api", "depots"] }
+              }
+            },
+            {
+              "name": "Show Depot",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/depots/{{depot_id}}", "host": ["{{base_url}}"], "path": ["api", "depots", "{{depot_id}}"] }
+              }
+            },
+            {
+              "name": "Update Depot",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Rangpur Depot\",\n    \"code\": \"RNG\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/depots/{{depot_id}}", "host": ["{{base_url}}"], "path": ["api", "depots", "{{depot_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Depot",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/depots/{{depot_id}}", "host": ["{{base_url}}"], "path": ["api", "depots", "{{depot_id}}"] },
+                "description": "409 if the depot is still referenced by a case."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Businesses",
+          "item": [
+            {
+              "name": "List Businesses",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/businesses", "host": ["{{base_url}}"], "path": ["api", "businesses"] }
+              }
+            },
+            {
+              "name": "Create Business",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Consumer Brands\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/businesses", "host": ["{{base_url}}"], "path": ["api", "businesses"] }
+              }
+            },
+            {
+              "name": "Show Business",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/businesses/{{business_id}}", "host": ["{{base_url}}"], "path": ["api", "businesses", "{{business_id}}"] }
+              }
+            },
+            {
+              "name": "Update Business",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Consumer Brands Ltd\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/businesses/{{business_id}}", "host": ["{{base_url}}"], "path": ["api", "businesses", "{{business_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Business",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/businesses/{{business_id}}", "host": ["{{base_url}}"], "path": ["api", "businesses", "{{business_id}}"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lawyers",
+          "item": [
+            {
+              "name": "List Lawyers",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/lawyers", "host": ["{{base_url}}"], "path": ["api", "lawyers"] }
+              }
+            },
+            {
+              "name": "Create Lawyer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Advocate Md. Karim\",\n    \"phone\": \"01711000000\",\n    \"email\": \"karim@example.com\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/lawyers", "host": ["{{base_url}}"], "path": ["api", "lawyers"] }
+              }
+            },
+            {
+              "name": "Show Lawyer",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/lawyers/{{lawyer_id}}", "host": ["{{base_url}}"], "path": ["api", "lawyers", "{{lawyer_id}}"] }
+              }
+            },
+            {
+              "name": "Update Lawyer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Advocate Md. Karim\",\n    \"phone\": \"01711000001\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/lawyers/{{lawyer_id}}", "host": ["{{base_url}}"], "path": ["api", "lawyers", "{{lawyer_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Lawyer",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/lawyers/{{lawyer_id}}", "host": ["{{base_url}}"], "path": ["api", "lawyers", "{{lawyer_id}}"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Courts",
+          "item": [
+            {
+              "name": "List Courts",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/courts", "host": ["{{base_url}}"], "path": ["api", "courts"] }
+              }
+            },
+            {
+              "name": "Create Court",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"CMM Court, Dhaka\",\n    \"location\": \"Dhaka\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/courts", "host": ["{{base_url}}"], "path": ["api", "courts"] }
+              }
+            },
+            {
+              "name": "Show Court",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/courts/{{court_id}}", "host": ["{{base_url}}"], "path": ["api", "courts", "{{court_id}}"] }
+              }
+            },
+            {
+              "name": "Update Court",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"CMM Court, Dhaka\",\n    \"location\": \"Dhaka Metro\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/courts/{{court_id}}", "host": ["{{base_url}}"], "path": ["api", "courts", "{{court_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Court",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/courts/{{court_id}}", "host": ["{{base_url}}"], "path": ["api", "courts", "{{court_id}}"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Case Statuses",
+          "item": [
+            {
+              "name": "List Case Statuses",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/case_statuses", "host": ["{{base_url}}"], "path": ["api", "case_statuses"] }
+              }
+            },
+            {
+              "name": "Create Case Status",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Appeal Filed\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/case_statuses", "host": ["{{base_url}}"], "path": ["api", "case_statuses"] }
+              }
+            },
+            {
+              "name": "Show Case Status",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/case_statuses/{{case_status_id}}", "host": ["{{base_url}}"], "path": ["api", "case_statuses", "{{case_status_id}}"] }
+              }
+            },
+            {
+              "name": "Update Case Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"Appeal Pending\",\n    \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/case_statuses/{{case_status_id}}", "host": ["{{base_url}}"], "path": ["api", "case_statuses", "{{case_status_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Case Status",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/case_statuses/{{case_status_id}}", "host": ["{{base_url}}"], "path": ["api", "case_statuses", "{{case_status_id}}"] }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Administrator",
+      "description": "Menu: Administrator. Sub-menus: User, Role, Permission.",
+      "item": [
+        {
+          "name": "Administration Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/administration", "host": ["{{base_url}}"], "path": ["api", "administration"] },
+            "description": "counts, users, roles (with users_count + permissions), permissions, permission_groups and User/Role/Permission audit logs."
+          }
+        },
+        {
+          "name": "User",
+          "item": [
+            {
+              "name": "List Users",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": {
+                  "raw": "{{base_url}}/api/users",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "users"],
+                  "query": [
+                    { "key": "search", "value": "islam", "disabled": true },
+                    { "key": "role", "value": "Admin", "disabled": true },
+                    { "key": "status", "value": "1", "disabled": true }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "User Form Data (roles + permissions)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/users/form_data", "host": ["{{base_url}}"], "path": ["api", "users", "form_data"] }
+              }
+            },
+            {
+              "name": "Create User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "if (res.user && res.user.id) {",
+                      "    pm.collectionVariables.set('user_id', res.user.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Nusrat Jahan\",\n    \"email\": \"nusrat@acibd.com\",\n    \"password\": \"secret123\",\n    \"status\": true,\n    \"roles\": [\"Legal Officer\"],\n    \"permissions\": [\"settings.manage\"]\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/users", "host": ["{{base_url}}"], "path": ["api", "users"] },
+                "description": "Admin-created accounts do NOT get a login token (unlike /register). permissions is optional — direct permissions on top of the role."
+              }
+            },
+            {
+              "name": "Show User",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "users", "{{user_id}}"] }
+              }
+            },
+            {
+              "name": "Update User",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Nusrat Jahan Chowdhury\",\n    \"email\": \"nusrat@acibd.com\",\n    \"status\": true,\n    \"roles\": [\"Admin\"],\n    \"permissions\": []\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "users", "{{user_id}}"] },
+                "description": "password is optional — send it only to change it."
+              }
+            },
+            {
+              "name": "Toggle User Status",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/users/{{user_id}}/toggle_status", "host": ["{{base_url}}"], "path": ["api", "users", "{{user_id}}", "toggle_status"] },
+                "description": "409 if you target your own account."
+              }
+            },
+            {
+              "name": "Delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "users", "{{user_id}}"] },
+                "description": "409 if you target your own account."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Role",
+          "item": [
+            {
+              "name": "List Roles",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/roles", "host": ["{{base_url}}"], "path": ["api", "roles"] }
+              }
+            },
+            {
+              "name": "Role Create Form (permissions)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/roles/create", "host": ["{{base_url}}"], "path": ["api", "roles", "create"] }
+              }
+            },
+            {
+              "name": "Create Role",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "if (res.role && res.role.id) {",
+                      "    pm.collectionVariables.set('role_id', res.role.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Auditor\",\n    \"permission\": [\n        \"dashboard.view\",\n        \"case.view\",\n        \"report.view\",\n        \"analytics.view\"\n    ]\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/roles", "host": ["{{base_url}}"], "path": ["api", "roles"] },
+                "description": "permission is an array of permission NAMES and is optional."
+              }
+            },
+            {
+              "name": "Show Role",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["api", "roles", "{{role_id}}"] }
+              }
+            },
+            {
+              "name": "Edit Role",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/roles/{{role_id}}/edit", "host": ["{{base_url}}"], "path": ["api", "roles", "{{role_id}}", "edit"] }
+              }
+            },
+            {
+              "name": "Update Role",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Auditor\",\n    \"permission\": [\n        \"dashboard.view\",\n        \"case.view\"\n    ]\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["api", "roles", "{{role_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Role",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["api", "roles", "{{role_id}}"] },
+                "description": "409 if the role is still assigned to users."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Permission",
+          "item": [
+            {
+              "name": "List Permissions",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/permissions", "host": ["{{base_url}}"], "path": ["api", "permissions"] },
+                "description": "Also returns permission_groups — bucketed by module for checkbox groups."
+              }
+            },
+            {
+              "name": "Create Permission",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "if (res.permission && res.permission.id) {",
+                      "    pm.collectionVariables.set('permission_id', res.permission.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"case.approve\"\n}" },
+                "url": { "raw": "{{base_url}}/api/permissions", "host": ["{{base_url}}"], "path": ["api", "permissions"] },
+                "description": "Use module.action naming — the part before the first dot becomes the group."
+              }
+            },
+            {
+              "name": "Show Permission",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/permissions/{{permission_id}}", "host": ["{{base_url}}"], "path": ["api", "permissions", "{{permission_id}}"] }
+              }
+            },
+            {
+              "name": "Edit Permission",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/permissions/{{permission_id}}/edit", "host": ["{{base_url}}"], "path": ["api", "permissions", "{{permission_id}}", "edit"] }
+              }
+            },
+            {
+              "name": "Update Permission",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n    \"name\": \"case.approve_final\"\n}" },
+                "url": { "raw": "{{base_url}}/api/permissions/{{permission_id}}", "host": ["{{base_url}}"], "path": ["api", "permissions", "{{permission_id}}"] }
+              }
+            },
+            {
+              "name": "Delete Permission",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/api/permissions/{{permission_id}}", "host": ["{{base_url}}"], "path": ["api", "permissions", "{{permission_id}}"] },
+                "description": "409 if the permission is attached to a role."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy User Endpoints",
+      "description": "Pre-existing endpoints, kept working unchanged. Prefer Administrator › User for new work.",
+      "item": [
+        {
+          "name": "User List (with permissions)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/user_list", "host": ["{{base_url}}"], "path": ["api", "user_list"] }
+          }
+        },
+        {
+          "name": "All User List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/all_user_list", "host": ["{{base_url}}"], "path": ["api", "all_user_list"] }
+          }
+        },
+        {
+          "name": "User Show",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/user_show/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "user_show", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "User Edit",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/user_edit/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "user_edit", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "User Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n    \"name\": \"Updated Name\",\n    \"email\": \"updated@acibd.com\",\n    \"status\": true,\n    \"roles\": [\"Admin\"]\n}" },
+            "url": { "raw": "{{base_url}}/api/user_update/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "user_update", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "User Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/user_delete/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "user_delete", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "Assign Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n    \"permissions\": [\n        \"case.view\",\n        \"case.edit\"\n    ]\n}" },
+            "url": { "raw": "{{base_url}}/api/assign_permission/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "assign_permission", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "Role List (id => name)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/role_list", "host": ["{{base_url}}"], "path": ["api", "role_list"] }
+          }
+        },
+        {
+          "name": "Permission List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/permission_list", "host": ["{{base_url}}"], "path": ["api", "permission_list"] }
+          }
+        },
+        {
+          "name": "Role Wise User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/role_wise_user", "host": ["{{base_url}}"], "path": ["api", "role_wise_user"] }
+          }
+        }
+      ]
+    }
+  ]
+}

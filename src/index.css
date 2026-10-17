@@ -1,0 +1,203 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-border: #e8eaed;
+  --color-border-strong: #d5d8dd;
+  --color-ink: #1a1d21;
+  --color-muted: #6b7280;
+  --color-faint: #9ca3af;
+
+  --color-accent: #4f46e5;
+  --color-accent-soft: #eef0fe;
+  --color-accent-hover: #4338ca;
+
+  --color-ok: #16a34a;
+  --color-ok-soft: #e7f6ec;
+  --color-warn: #d97706;
+  --color-warn-soft: #fbf1e2;
+  --color-info: #2563eb;
+  --color-info-soft: #e6efff;
+  --color-bad: #dc2626;
+  --color-bad-soft: #fbeaea;
+  --color-neutral: #64748b;
+  --color-neutral-soft: #eef1f4;
+
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-ink text-sm leading-normal antialiased;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Reusable primitives (buttons, inputs, pills) — standard Tailwind component layer */
+@layer components {
+  .input {
+    @apply w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-ink
+      transition focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent-soft;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-ghost,
+  .btn-danger {
+    @apply inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-transparent
+      px-3.5 py-2 text-[13px] font-semibold transition;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-hover;
+  }
+  .btn-ghost {
+    @apply border-border-strong bg-surface text-ink hover:bg-bg;
+  }
+  .btn-danger {
+    @apply border-border-strong bg-surface text-bad hover:border-bad-soft hover:bg-bad-soft;
+  }
+
+  /* Excel export — green fill; on hover it lifts, glows, sweeps a shine and
+     the icon bounces like a download. */
+  .btn-excel {
+    @apply relative inline-flex items-center gap-2 overflow-hidden whitespace-nowrap rounded-md border
+      border-[#1d6f42] bg-[#1f7a4a] px-3.5 py-2 text-[13px] font-semibold text-white
+      shadow-sm transition duration-200 ease-out;
+  }
+  .btn-excel::after {
+    content: '';
+    @apply pointer-events-none absolute inset-y-0 -left-full w-1/2 -skew-x-12
+      bg-gradient-to-r from-transparent via-white/35 to-transparent;
+  }
+  .btn-excel:hover:not(:disabled) {
+    @apply -translate-y-0.5 bg-[#18653c] shadow-[0_6px_16px_-4px_rgba(31,122,74,0.55)];
+  }
+  .btn-excel:hover:not(:disabled)::after {
+    animation: excel-shine 0.75s ease-out;
+  }
+  .btn-excel:hover:not(:disabled) .btn-excel-icon {
+    animation: excel-bounce 0.8s ease-in-out infinite;
+  }
+  .btn-excel:active:not(:disabled) {
+    @apply translate-y-0 shadow-sm;
+  }
+  .btn-excel:focus-visible {
+    @apply outline-none ring-3 ring-[#1f7a4a]/30;
+  }
+  .btn-excel:disabled {
+    @apply cursor-not-allowed opacity-55;
+  }
+
+  .card {
+    @apply rounded-[10px] border border-border bg-surface shadow-card;
+  }
+
+  .pill {
+    @apply inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .prio {
+    @apply inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide;
+  }
+
+  .field-label {
+    @apply block min-h-[2.5em] text-[13px] font-semibold leading-[1.25] text-ink;
+  }
+
+  /* Field source badges */
+  .badge {
+    @apply inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide;
+  }
+  .badge-manual {
+    @apply bg-accent-soft text-accent;
+  }
+  .badge-sdms {
+    @apply bg-ok-soft text-ok;
+  }
+  .badge-calc {
+    @apply bg-info-soft text-info;
+  }
+  .badge-add {
+    @apply border border-dashed border-bad/50 text-bad;
+  }
+
+  /* Read-only / auto field */
+  .input-readonly {
+    @apply cursor-not-allowed border-dashed bg-bg text-muted;
+  }
+  .filter-label {
+    @apply text-[11px] font-medium uppercase tracking-wide text-muted;
+  }
+
+  /* Data tables */
+  .tbl {
+    @apply w-full border-collapse text-[13.5px];
+  }
+  .tbl thead th {
+    @apply border-b border-border bg-bg px-4 py-3 text-left text-[11px] font-semibold uppercase
+      tracking-wide whitespace-nowrap text-faint;
+  }
+  .tbl tbody td {
+    @apply border-b border-border px-4 py-3 text-ink;
+  }
+  .tbl thead th + th,
+  .tbl tbody td + td {
+    @apply border-l border-border;
+  }
+  .tbl tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .tbl tbody tr:hover {
+    @apply bg-bg;
+  }
+
+  /* Section heading inside a card */
+  .card-title {
+    @apply mb-3.5 text-[15px] font-semibold tracking-tight;
+  }
+
+  /* KPI gradient cards */
+  .kpi {
+    @apply rounded-[10px] p-[18px] text-white;
+  }
+  .kpi-value {
+    @apply text-[26px] font-bold tracking-tight;
+  }
+  .kpi-label {
+    @apply mt-0.5 text-[12.5px] opacity-90;
+  }
+
+  /* Audit trail */
+  .audit-item {
+    @apply rounded-md border-l-2 border-accent bg-bg px-3 py-2.5 text-[12.5px];
+  }
+}
+
+@keyframes excel-shine {
+  to {
+    left: 150%;
+  }
+}
+
+@keyframes excel-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-excel,
+  .btn-excel::after,
+  .btn-excel .btn-excel-icon {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
